@@ -50,6 +50,7 @@ h1 {
 .cell.invalid:focus {
   border-color: #dc3545;
   box-shadow: 0 0 0 rgba(220, 53, 69, 0.5);
+  z-index: 1;
 }
 
 .cell:hover {

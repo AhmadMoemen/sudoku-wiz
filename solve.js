@@ -73,14 +73,14 @@ function renderBoard(board) {
 
 // Function to update the Sudoku grid based on user input
 function updateBoard(event) {
-  const numonly = /^\d+$/;
+  const numonly = /^[1-9]$/;
   const cellInput = event.target;
   const cellId = cellInput.id;
   const row = parseInt(cellId.charAt(4));
   const col = parseInt(cellId.charAt(5));
   const value = parseInt(cellInput.value) || 0;
   const prevValue = board[row][col]; // Store the previous value
-
+  if(!numonly.test(cellInput.value)) cellInput.value = "" // input only 1-9
   board[row][col] = value;
 
   if (!isValidMove(board, row, col, value)) {
