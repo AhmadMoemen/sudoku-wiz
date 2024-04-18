@@ -47,31 +47,58 @@ function renderBoard(board) {
   const sudokuBoard = document.getElementById("sudokuBoard");
   sudokuBoard.innerHTML = ""; // Clear previous board
 
-  for (let row = 0; row < 9; row++) {
-    const rowDiv = document.createElement("div");
-    rowDiv.classList.add("row");
+  // Loop through each 3x3 grid row
+  for (let gridRow = 0; gridRow < 3; gridRow++) {
+    const gridRowDiv = document.createElement("div");
+    gridRowDiv.classList.add("grid-row");
 
-    for (let col = 0; col < 9; col++) {
-      const cellInput = document.createElement("input");
-      cellInput.setAttribute("type", "text");
-      cellInput.setAttribute("autocomplete", "off");
-      cellInput.setAttribute("id", "cell" + row + col);
-      cellInput.classList.add("cell");
-      cellInput.maxLength = 1;
-      cellInput.style.backgroundColor = board[row][col] === 0 ? "#ccc" : "#fff";
-      cellInput.value = board[row][col] === 0 ? "" : board[row][col];
-      cellInput.addEventListener("input", updateBoard);
-      $("input").keydown(function () {
-        $(this).val("");
-      });
-      rowDiv.appendChild(cellInput);
+    // Loop through each 3x3 grid column
+    for (let gridCol = 0; gridCol < 3; gridCol++) {
+      const gridDiv = document.createElement("div");
+      gridDiv.classList.add("grid");
+
+      // Loop through each cell within the 3x3 grid
+      for (let row = gridRow * 3; row < (gridRow + 1) * 3; row++) {
+        const rowDiv = document.createElement("div");
+        rowDiv.classList.add("row");
+
+        for (let col = gridCol * 3; col < (gridCol + 1) * 3; col++) {
+          const cellInput = document.createElement("input");
+          cellInput.setAttribute("type", "text");
+          cellInput.setAttribute("autocomplete", "off");
+          cellInput.setAttribute("id", "cell" + row + col);
+          cellInput.classList.add("cell");
+          cellInput.maxLength = 1; // Only one number is entered
+          cellInput.style.backgroundColor = board[row][col] === 0 ? "#ccc" : "#fff";
+
+          // Convert array zeros to blank cells and disable preexisting board numbers
+          if (board[row][col] === 0) {
+            cellInput.value = "";
+          } else {
+            cellInput.value = board[row][col];
+            cellInput.setAttribute("disabled", true);
+          }
+
+          cellInput.addEventListener("input", updateBoard);
+          // Switch numbers when user presses on another number immediately.
+          $("input").keydown(function () {
+            $(this).val("");
+          });
+          rowDiv.appendChild(cellInput);
+        }
+
+        gridDiv.appendChild(rowDiv);
+      }
+
+      gridRowDiv.appendChild(gridDiv);
     }
 
-    sudokuBoard.appendChild(rowDiv);
+    sudokuBoard.appendChild(gridRowDiv);
   }
 }
 
-// Function to update the Sudoku grid based on user input
+
+// Function to update the Sudoku grid based on user input with conditions
 function updateBoard(event) {
   const numonly = /^[1-9]$/;
   const cellInput = event.target;
@@ -107,9 +134,9 @@ function copyBoard(board) {
 }
 // Function to solve Sudoku puzzle
 function solveSudoku(algo, board) {
-  // Data types for both BFS, DFS and IDS algorithms
-  let queue = [board];
-  let stack = [board];
+  // Data types for BFS, DFS and IDS algorithms
+  let queue = [board]; // BFS
+  let stack = [board]; // DFS
 
   function stepBFS() {
     if (queue.length === 0) {
