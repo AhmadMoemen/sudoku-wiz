@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SudokuWiz</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <h1>SudokuWiz</h1>
-        <table class="sudoku-board" id="sudokuBoard">
-            <!-- Sudoku puzzle will be generated here -->
-        </table>
-        <div class="btnConatiner">
-            <button id="btnBFS" class="btn">BFS</button>
-            <button id="btnDFS" class="btn">DFS</button>
-        </div>
+      <h1>SudokuWiz</h1>
+      <div class="sudoku-board" id="sudokuBoard">
+        <!-- Sudoku puzzle will be generated here -->
+      </div>
+      <p id="status"></p>
+      <p id="depth"></p>
+      <div class="btnConatiner">
+        <button id="btnBFS" class="btn">BFS</button>
+        <button id="btnDFS" class="btn">DFS</button>
+        <button id="btnIDS" class="btn">IDS</button>
+        <button id="btnGreedy" class="btn">Greedy</button>
+      </div>
     </div>
-    <script src="jquery/jquery-3.7.1.min.js"></script>
+    <script src="main.js"></script>
     <script src="solve.js"></script>
-</body>
-
+  </body>
 </html>

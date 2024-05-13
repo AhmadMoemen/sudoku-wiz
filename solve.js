@@ -1,226 +1,108 @@
-// Function to check if a move is valid in Sudoku
-function isValidMove(board, row, col, num) {
-  // Check if the number already exists in the current row
-  for (let i = 0; i < 9; i++) {
-    if (board[row][i] === num && i !== col) {
-      return false;
-    }
-  }
-
-  // Check if the number already exists in the current column
-  for (let i = 0; i < 9; i++) {
-    if (board[i][col] === num && i !== row) {
-      return false;
-    }
-  }
-
-  // Check if the number already exists in the current 3x3 subgrid
-  const startRow = Math.floor(row / 3) * 3;
-  const startCol = Math.floor(col / 3) * 3;
-  for (let i = startRow; i < startRow + 3; i++) {
-    for (let j = startCol; j < startCol + 3; j++) {
-      if (board[i][j] === num && (i !== row || j !== col)) {
-        return false;
-      }
-    }
-  }
-
-  return true; // Move is valid
-}
-
-// Function to validate the entire Sudoku board
-function validateSolution(board) {
-  // Check each row, column, and 3x3 subgrid
-  for (let i = 0; i < 9; i++) {
-    for (let j = 0; j < 9; j++) {
-      const num = board[i][j];
-      if (num !== 0 && !isValidMove(board, i, j, num)) {
-        return false; // Invalid move found
-      }
-    }
-  }
-  return true; // Solution is valid
-}
-
-// Function to render Sudoku board on the UI
-function renderBoard(board) {
-  const sudokuBoard = document.getElementById("sudokuBoard");
-  sudokuBoard.innerHTML = ""; // Clear previous board
-
-  // Loop through each 3x3 grid row
-  for (let gridRow = 0; gridRow < 3; gridRow++) {
-    const gridRowDiv = document.createElement("div");
-    gridRowDiv.classList.add("grid-row");
-
-    // Loop through each 3x3 grid column
-    for (let gridCol = 0; gridCol < 3; gridCol++) {
-      const gridDiv = document.createElement("div");
-      gridDiv.classList.add("grid");
-
-      // Loop through each cell within the 3x3 grid
-      for (let row = gridRow * 3; row < (gridRow + 1) * 3; row++) {
-        const rowDiv = document.createElement("div");
-        rowDiv.classList.add("row");
-
-        for (let col = gridCol * 3; col < (gridCol + 1) * 3; col++) {
-          const cellInput = document.createElement("input");
-          cellInput.setAttribute("type", "text");
-          cellInput.setAttribute("autocomplete", "off");
-          cellInput.setAttribute("id", "cell" + row + col);
-          cellInput.classList.add("cell");
-          cellInput.maxLength = 1; // Only one number is entered
-          cellInput.style.backgroundColor = board[row][col] === 0 ? "#ccc" : "#fff";
-
-          // Convert array zeros to blank cells and disable preexisting board numbers
-          if (board[row][col] === 0) {
-            cellInput.value = "";
-          } else {
-            cellInput.value = board[row][col];
-            cellInput.setAttribute("disabled", true);
-          }
-
-          cellInput.addEventListener("input", updateBoard);
-          // Switch numbers when user presses on another number immediately.
-          $("input").keydown(function () {
-            $(this).val("");
-          });
-          rowDiv.appendChild(cellInput);
-        }
-
-        gridDiv.appendChild(rowDiv);
-      }
-
-      gridRowDiv.appendChild(gridDiv);
-    }
-
-    sudokuBoard.appendChild(gridRowDiv);
-  }
-}
-
-
-// Function to update the Sudoku grid based on user input with conditions
-function updateBoard(event) {
-  const numonly = /^[1-9]$/;
-  const cellInput = event.target;
-  const cellId = cellInput.id;
-  const row = parseInt(cellId.charAt(4));
-  const col = parseInt(cellId.charAt(5));
-  const value = parseInt(cellInput.value) || 0;
-  const prevValue = board[row][col]; // Store the previous value
-  if(!numonly.test(cellInput.value)) cellInput.value = "" // input only 1-9
-  board[row][col] = value;
-
-  if (!isValidMove(board, row, col, value)) {
-    cellInput.classList.add("invalid");
-  } else {
-    cellInput.classList.remove("invalid");
-  }
-}
-
-// Function to find an empty cell in the Sudoku board
-function findEmptyCell(board) {
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col] === 0) {
-        return [row, col];
-      }
-    }
-  }
-  return null; // No empty cell found
-}
-// Function to copy a Sudoku board
-function copyBoard(board) {
-  return board.map((row) => row.slice());
-}
-// Function to solve Sudoku puzzle
 function solveSudoku(algo, board) {
-  // Data types for BFS, DFS and IDS algorithms
-  let queue = [board]; // BFS
-  let stack = [board]; // DFS
+  // Prepare data types for all algorithms based on user choice
+  let queue;
+  let stack;
 
-  function stepBFS() {
-    if (queue.length === 0) {
-      return null; // No solution found
-    }
+  switch (algo) {
+    case "BFS":
+      queue = [board];
+      break;
+    case "DFS":
+    case "Greedy":
+      stack = [board];
+      break;
+    case "IDS":
+      stack = [[board, 0]];
+      break;
+    default:
+      throw new Error("Invalid algorithm specified");
+  }
+  let delay = 10; // Delay time (in milliseconds)
 
-    let current = queue.shift();
-    let emptyCell = findEmptyCell(current);
+  function solve(currentBoard, depth = 0) {
+    let emptyCell = findEmptyCell(currentBoard);
 
     if (!emptyCell) {
       // Puzzle solved successfully
-      renderBoard(current); // Render the solved board
-      return current;
+      updateBoardAI(currentBoard, true);
+      printValid();
+      return currentBoard;
+    }
+    if (algo === "BFS" && queue.length === 0) {
+      return null; // No solution found (BFS specific)
     }
 
-    const [row, col] = emptyCell;
+    let [row, col] = emptyCell;
 
-    for (let num = 1; num <= 9; num++) {
-      if (isValidMove(current, row, col, num)) {
-        let newBoard = copyBoard(current);
+    if (algo === "Greedy") {
+      let nextCell = findNextCellGreedy(currentBoard);
+      row = nextCell[0];
+      col = nextCell[1];
+    }
+
+    for (let num = 1; num <= board.length; num++) {
+      if (isValidMove(currentBoard, row, col, num)) {
+        let newBoard = copyBoard(currentBoard);
         newBoard[row][col] = num;
-        queue.push(newBoard);
+        if (algo === "BFS") {
+          queue.push(newBoard);
+        } else if (algo === "IDS") {
+          stack.push([newBoard, depth + 1]); // Update depth for IDS
+          document.getElementById("depth").innerHTML = depth;
+        } else {
+          stack.push(newBoard); // For DFS and Greedy
+        }
       }
     }
-    renderBoard(current);
-    setTimeout(stepBFS, 0.1);
-  }
 
-  function stepDFS() {
-    if (stack.length === 0) {
-      return null;
+    let nextBoard;
+    switch (algo) {
+      case "BFS":
+        nextBoard = queue.shift();
+        break;
+      case "DFS":
+      case "IDS":
+      case "Greedy":
+        nextBoard = stack.pop();
+        break;
+      default:
+        throw new Error("Invalid algorithm specified");
     }
 
-    let current = stack.pop();
-    let emptyCell = findEmptyCell(current);
+    updateBoardAI(currentBoard, true); // Can be called before or after pushing to stack
 
-    if (!emptyCell) {
-      // Puzzle solved successfully
-      renderBoard(current); // Render the solved board
-      return current;
+    if (algo === "IDS") {
+      return setTimeout(() => solve(nextBoard[0], nextBoard[1]), delay); // Recursive call with next state and depth for DFS/IDS
+    } else {
+      return setTimeout(() => solve(nextBoard), delay); // Recursive call with next state and depth for BFS/Greedy
     }
-
-    const [row, col] = emptyCell;
-
-    for (let num = 1; num <= 9; num++) {
-      if (isValidMove(current, row, col, num)) {
-        let newBoard = copyBoard(current);
-        newBoard[row][col] = num;
-        stack.push(newBoard);
-      }
-    }
-    renderBoard(current);
-    setTimeout(stepDFS, 0.0001);
   }
-  if (algo == 1) {
-    stepBFS();
-  } else if (algo == 2) {
-    stepDFS();
-  }
+
+  // Start the recursive step with a delay
+  return setTimeout(() => solve(board), delay);
 }
 
-// Example Sudoku board
-const board = [
-  [5, 3, 0, 0, 7, 0, 0, 0, 0],
-  [6, 0, 0, 1, 9, 5, 0, 0, 0],
-  [0, 9, 8, 0, 0, 0, 0, 6, 0],
-  [8, 0, 0, 0, 6, 0, 0, 0, 3],
-  [4, 0, 0, 8, 0, 3, 0, 0, 1],
-  [7, 0, 0, 0, 2, 0, 0, 0, 6],
-  [0, 6, 0, 0, 0, 0, 2, 8, 0],
-  [0, 0, 0, 4, 1, 9, 0, 0, 5],
-  [0, 0, 0, 0, 8, 0, 0, 7, 9],
-];
+function findNextCellGreedy(board) {
+  // This function should find the empty cell with the fewest possible valid moves.
+  // Here's an example implementation:
+  let minValidMoves = board.length;
+  let minValidCell = null;
 
-renderBoard(board); // Initial rendering of Sudoku board
-
-const btnBFS = document.getElementById("btnBFS");
-btnBFS.addEventListener("click", () => {
-  const solvedBoard = solveSudoku(1, board);
-  renderBoard(solvedBoard);
-});
-
-const btnDFS = document.getElementById("btnDFS");
-btnDFS.addEventListener("click", () => {
-  const solvedBoard = solveSudoku(2, board);
-  renderBoard(solvedBoard);
-});
+  for (let row = 0; row < board.length; row++) {
+    for (let col = 0; col < board.length; col++) {
+      if (board[row][col] === 0) {
+        let validMoves = 0;
+        for (let num = 1; num <= board.length; num++) {
+          if (isValidMove(board, row, col, num)) {
+            validMoves++;
+          }
+        }
+        if (validMoves < minValidMoves) {
+          minValidMoves = validMoves;
+          minValidCell = [row, col];
+        }
+      }
+    }
+  }
+  return minValidCell; // Return the cell with the fewest valid moves
+}
