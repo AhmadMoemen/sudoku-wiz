@@ -194,12 +194,6 @@ btnDFS.addEventListener("click", () => {
   updateBoardAI(solvedBoard, true);
 });
 
-const btnDLS = document.getElementById("btnDLS");
-btnDLS.addEventListener("click", () => {
-  const solvedBoard = solveSudoku("DLS", board);
-  updateBoardAI(solvedBoard, true);
-});
-
 const btnGreedy = document.getElementById("btnGreedy");
 btnGreedy.addEventListener("click", () => {
   const solvedBoard = solveSudoku("Greedy", board);
