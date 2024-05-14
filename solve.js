@@ -11,15 +11,12 @@ function solveSudoku(algo, board) {
     case "Greedy":
       stack = [board];
       break;
-    case "IDS":
-      stack = [[board, 0]];
-      break;
     default:
       throw new Error("Invalid algorithm specified");
   }
   let delay = 10; // Delay time (in milliseconds)
 
-  function solve(currentBoard, depth = 0) {
+  function solve(currentBoard) {
     let emptyCell = findEmptyCell(currentBoard);
 
     if (!emptyCell) {
@@ -31,7 +28,6 @@ function solveSudoku(algo, board) {
     if (algo === "BFS" && queue.length === 0) {
       return null; // No solution found (BFS specific)
     }
-
     let [row, col] = emptyCell;
 
     if (algo === "Greedy") {
@@ -46,11 +42,8 @@ function solveSudoku(algo, board) {
         newBoard[row][col] = num;
         if (algo === "BFS") {
           queue.push(newBoard);
-        } else if (algo === "IDS") {
-          stack.push([newBoard, depth + 1]); // Update depth for IDS
-          document.getElementById("depth").innerHTML = depth;
         } else {
-          stack.push(newBoard); // For DFS and Greedy
+          stack.push(newBoard); // For DFS, DLS, and Greedy
         }
       }
     }
@@ -61,7 +54,6 @@ function solveSudoku(algo, board) {
         nextBoard = queue.shift();
         break;
       case "DFS":
-      case "IDS":
       case "Greedy":
         nextBoard = stack.pop();
         break;
@@ -71,11 +63,7 @@ function solveSudoku(algo, board) {
 
     updateBoardAI(currentBoard, true); // Can be called before or after pushing to stack
 
-    if (algo === "IDS") {
-      return setTimeout(() => solve(nextBoard[0], nextBoard[1]), delay); // Recursive call with next state and depth for DFS/IDS
-    } else {
-      return setTimeout(() => solve(nextBoard), delay); // Recursive call with next state and depth for BFS/Greedy
-    }
+    return setTimeout(() => solve(nextBoard), delay); // Recursive call with next state and depth for BFS/DFS/DLS/Greedy
   }
 
   // Start the recursive step with a delay

@@ -44,7 +44,6 @@ function validateSolution(board) {
 
 // Tell the user that the solution is valid and puzzle solved.
 function printValid() {
-  console.log("printing");
   if (validateSolution) {
     document.getElementById("status").innerText = "Solution is valid.";
   }
@@ -195,9 +194,9 @@ btnDFS.addEventListener("click", () => {
   updateBoardAI(solvedBoard, true);
 });
 
-const btnDLS = document.getElementById("btnIDS");
+const btnDLS = document.getElementById("btnDLS");
 btnDLS.addEventListener("click", () => {
-  const solvedBoard = solveSudoku("IDS", board);
+  const solvedBoard = solveSudoku("DLS", board);
   updateBoardAI(solvedBoard, true);
 });
 
